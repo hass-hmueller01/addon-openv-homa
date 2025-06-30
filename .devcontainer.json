@@ -1,5 +1,5 @@
 {
-  "name": "Vcontrol Home Assistant add-on repository",
+  "name": "devcontainer for openV vcontrold to HomA MQTT Home Assistant add-on repository",
   "image": "ghcr.io/home-assistant/devcontainer:addons",
   "appPort": ["7123:8123", "7357:4357"],
   "postStartCommand": "sudo -E bash devcontainer_bootstrap",

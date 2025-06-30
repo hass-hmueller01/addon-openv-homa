@@ -4,6 +4,10 @@
 # s6-overlay docs: https://github.com/just-containers/s6-overlay
 # ==============================================================================
 
+# TODO: Remove this once the MQTT-based vclient_sub is fully implemented
+bashio::log.warning "Setting Vcontrold values over MQTT is not supported in this version."
+tail -f /dev/null  # Wait here indefinitely to prevent the script from exiting
+
 # Fetch MQTT settings
 source /etc/services.d/get_mqtt_settings.sh
 

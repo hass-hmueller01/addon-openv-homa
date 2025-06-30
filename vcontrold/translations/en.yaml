@@ -34,4 +34,28 @@ configuration:
     description: "Output of debug messages"
   commands:
     name: "Commands"
-    description: "List of commands to send. (Format: `command1:TYPE,command2:TYPE` where `TYPE` must be `FLOAT` or `STRING`)"
+    description: "List of commands to send. Format: Array of Objects:
+      `command` - Command, see vito.xml,
+      `type` - Typ of the value (FLOAT, FLOAT1 (one decimal place), INT or STRING),
+      `topic` - Topic to publish value,
+      `unit` (optional) - Unit name of the value,
+      `class` - Home Assistant class of the value (e.g. temperature, power_factor, enum),
+      `template` (optional) - Home Assistant for conveerting e.g. ENUM-values to readable stings.
+      Example:
+        - command: \"getTempRaumRedSollM2\"
+          type: \"FLOAT1\"
+          topic: \"Raumtemperatur reduziert soll\"
+          unit: \"°C\"
+          class: \"temperature\""
+  homa_system_id:
+    name: "HomA System ID"
+    description: "HomA System ID (Format: `123456-vito`)"
+  homa_device:
+    name: "HomA Device"
+    description: "HomA device name (default: `Vito`)"
+  homa_room:
+    name: "HomA Room"
+    description: "HomA room name (default: `Sensors`)"
+  hass_area:
+    name: "Home Assistant Area"
+    description: "Home Assistant area name (default: `Vito`)"
