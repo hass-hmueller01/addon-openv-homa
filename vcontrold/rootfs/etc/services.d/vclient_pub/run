@@ -16,14 +16,15 @@ if [[ -z "$REFRESH_RATE" || -z "$VCONTROL_HOST" || -z "$VCONTROL_PORT" ]]; then
     exit 1
 fi
 
-# Pause execution for 5 seconds to ensure all services are fully initialized
-sleep 5
+# Pause execution to ensure all services are fully initialized
+sleep 10
 
 # Run your program
 while true; do
     bashio::log.info "Executing vclient_pub command..."
     if vclient -h "$VCONTROL_HOST" -p "$VCONTROL_PORT" -f /etc/vcontrold/1_mqtt_commands.txt \
-               -t /etc/vcontrold/2_mqtt.tmpl -x /etc/vcontrold/3_mqtt_pub.sh; then
+               -t /etc/vcontrold/2_mqtt.tmpl > /dev/shm/3_vcontrold_mqtt_pub.sh; then
+        source /dev/shm/3_vcontrold_mqtt_pub.sh
         exitcode=0
         bashio::log.info "vclient_pub executed successfully."
     else
