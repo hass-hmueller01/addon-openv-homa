@@ -5,7 +5,7 @@ Once installed, the plugin fetches data from `vcontrold` and pushes it to the Ho
 
 Example: Command `getTempAtp` is executed and its return value is pushed into topic `/devices/123456-vito/controls/Aussentemperatur`.
 
-TODO: Writing values is not yet implemented.
+**TODO: Writing values is not yet implemented.**
 
 If you want to set values / write to Vitodens, simply write to a topic that has the man of the setter command as specified in **/etc/vcontrold/vito.xml**.
 
@@ -151,7 +151,7 @@ mqtt:
 
 The module use the `config` option (refer to https://developers.home-assistant.io/docs/add-ons/configuration/#add-on-advanced-options) for mounting a custom configuration file. It verifies the existence of a 'vito.xml' and 'vcontrold.xml' file during startup.
 
-Ensure the files are placed in the specified path of you Home Assistant installation:
+Ensure the files are placed in the specified path of your Home Assistant installation:
 ```
 config/vcontrold/vito.xml
 config/vcontrold/vcontrold.xml
