@@ -35,12 +35,12 @@ jobs:
         # with:
         #   since_last_remote_commit: true
         with:
-          files_separator: ' '
+        #   files_separator: ' '
           write_output_files: true
-          # Avoid using single or double quotes for multiline patterns
-          files: |
-            ${{ env.MONITORED_FILES }}
-          #  **.md
+        #   # Avoid using single or double quotes for multiline patterns
+        #   files: |
+        #     ${{ env.MONITORED_FILES }}
+        #   #  **.md
 
       - name: Find add-on directories
         id: addons
