@@ -41,8 +41,8 @@ jobs:
           # ALL_CHANGED_FILES_OLD: ${{ steps.changed_files_old.outputs.all }}
           ALL_CHANGED_FILES: ${{ steps.changed_files.outputs.all_changed_files }}
         run: |
-          echo "Monitored files: ${{ env.MONITORED_FILES }}";
-          echo "Changed files: ${ ALL_CHANGED_FILES }";
+          echo "Monitored files: ${{ env.MONITORED_FILES }}"
+          echo "Changed files: ${ALL_CHANGED_FILES}"
 
           declare -a changed_addons
           for addon in ${{ steps.addons.outputs.addons }}; do
