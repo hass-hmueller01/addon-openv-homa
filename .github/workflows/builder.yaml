@@ -23,7 +23,7 @@ jobs:
       - name: Check out the repository
         uses: actions/checkout@v4.2.2
 
-      - name: Get changed files
+      - name: Get changed files old
         id: changed_files_old
         uses: jitterbit/get-changed-files@v1
 
@@ -34,10 +34,10 @@ jobs:
         # To compare changes between the current commit and the last pushed remote commit set `since_last_remote_commit: true`. e.g
         # with:
         #   since_last_remote_commit: true
-        with:
+        #with:
           # Avoid using single or double quotes for multiline patterns
-          files: |
-            ${{ env.MONITORED_FILES }}
+          #files: |
+          #  ${{ env.MONITORED_FILES }}
           #  **.md
 
       - name: Find add-on directories
