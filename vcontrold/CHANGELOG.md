@@ -3,8 +3,10 @@
 ## [0.1.2]
 
 ### Fixed
-
 - jitterbit/get-changed-files@v1 runner Warning: The `set-output` command is deprecated and will be disabled soon. Replaced by tj-actions/changed-files@v46.0.5
+
+### Removed
+- French and Polish translations
 
 ## [0.1.1]
 
