@@ -4,6 +4,8 @@
 # s6-overlay docs: https://github.com/just-containers/s6-overlay
 # ==============================================================================
 
+bashio::log.info "vclient_pub service starting ..."
+
 # Fetch MQTT settings
 source /etc/services.d/get_mqtt_settings.sh
 
@@ -12,25 +14,25 @@ source /etc/services.d/get_vcontrold_settings.sh
 
 # Ensure required variables are set
 if [[ -z "$REFRESH_RATE" || -z "$VCONTROL_HOST" || -z "$VCONTROL_PORT" ]]; then
-    bashio::log.error "Missing essential environment variables. Check MQTT and Vcontrold settings."
-    exit 1
+    bashio::exit.nok "vclient_pub run: Missing essential environment variables. Check MQTT and Vcontrold settings."
 fi
 
-# Pause execution to ensure all services are fully initialized
-sleep 10
+# Do not exit on error
+set +e
 
 # Run your program
 while true; do
-    bashio::log.info "Executing vclient_pub command..."
     if vclient -h "$VCONTROL_HOST" -p "$VCONTROL_PORT" -f /etc/vcontrold/1_mqtt_commands.txt \
                -t /etc/vcontrold/2_mqtt.tmpl > /dev/shm/3_vcontrold_mqtt_pub.sh; then
         source /dev/shm/3_vcontrold_mqtt_pub.sh
-        exitcode=0
-        bashio::log.info "vclient_pub executed successfully."
+        exitcode=$?
+        if [[ $exitcode -ne 0 ]]; then
+            bashio::log.error "vclient_pub run: 3_vcontrold_mqtt_pub.sh failed with exit code $exitcode."
+        fi
     else
         exitcode=$?
-        bashio::log.error "vclient_pub run failed with exit code $exitcode."
+        bashio::log.error "vclient_pub run: vclient failed with exit code $exitcode."
     fi
-    bashio::log.info "Looping vclient_pub. Sleeping for $REFRESH_RATE seconds."
+    bashio::log.info "vclient_pub run: Sleeping for $REFRESH_RATE seconds."
     sleep "$REFRESH_RATE"
 done

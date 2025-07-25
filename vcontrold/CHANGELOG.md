@@ -6,6 +6,16 @@ All changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.6] - 2025-07-25
+
+### Changed
+- Migrated legacy to s6-overlay to fix the dependencies by using s6-notifyoncheck
+- Updated outputs
+
+## [0.1.5] - 2025-07-24
+
+- Not released
+
 ## [0.1.4] - 2025-07-22
 
 ### Changed

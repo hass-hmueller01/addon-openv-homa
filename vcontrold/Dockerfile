@@ -30,3 +30,5 @@ RUN \
 # Copy root filesystem
 COPY rootfs /
 COPY bashrc /root/.bashrc
+
+ENTRYPOINT ["/init"]

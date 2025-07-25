@@ -1,8 +1,11 @@
 #!/usr/bin/with-contenv bashio
 # ==============================================================================
 # Start the vcontrold service
-# s6-overlay docs: https://github.com/just-containers/s6-overlay
+# s6-overlay docs: https://skarnet.org/software/s6/index.html
+# (not used by this container https://github.com/just-containers/s6-overlay)
 # ==============================================================================
+
+bashio::log.info "vcontrold service starting ..."
 
 # Declare variables
 declare config_tty
@@ -13,7 +16,6 @@ declare config_room
 declare config_area
 declare config_areadeclare config_file_vito="/etc/vcontrold/vito.xml"
 declare config_file_vcontrold="/etc/vcontrold/vcontrold.xml"
-#declare config_file_commands="/etc/vcontrold/commands.yaml"
 declare config_commands
 declare model_name
 
@@ -49,18 +51,6 @@ if [ -f "/config/vcontrold/vcontrold.xml" ]; then
 else
     bashio::log.info "Using default vcontrold.xml file."
 fi
-
-# Check if custom commands.yaml file exists
-# if [ -f "/config/vcontrold/commands.yaml" ]; then
-#     bashio::log.info "Using custom commands.yaml file."
-#     config_file_commands="/config/vcontrold/commands.yaml"
-# else
-#     bashio::log.info "Using default commands.yaml file."
-# fi
-# if [ ! -f "$config_file_commands" ]; then
-#     bashio::log.error "commands.yaml not found. Exit here."
-#     exit 1
-# fi
 
 # Get the device name from the vito.xml file based on the device ID
 # Usage: get_device_name_from_xml
@@ -147,75 +137,6 @@ while read -r line; do
     homeassistant_config "_$topic" "_$topic" "_$class" "_$unit" "_$template"
 done <<< "$config_commands"
 
-# Parse commands.yaml file and generate mqtt template file
-# i=0
-# while IFS=$'\t' read -r cmd type topic class unit template; do
-#     ((i=i+1))
-#     cmd="${cmd#_}"  # Remove leading underscore
-#     type="${type#_}"
-#     topic="${topic#_}"
-#     class="${class#_}"
-#     unit="${unit#_}"
-#     template="${template#_}"
-#     if [[ -z "$cmd" ]]; then
-#          bashio::log.error "Command at index $i is empty. Please check your commands.yaml file."
-#         exit 1
-#     fi
-#     if [[ -z "$type" ]]; then
-#         bashio::log.warning "Type at index $i for command ${cmd} is not set. Defaulting to STRING."
-#         type="STRING"
-#     fi
-#     if [[ -z "$topic" ]]; then
-#         bashio::log.warning "Topic at index $i is not set. Defaulting to ${cmd}."
-#         topic="${cmd}"
-#     fi
-#     topic_tmpl=$(get_homa_topic "controls" "$topic")
-
-#     bashio::log.info "Configuring command ${i}: ${cmd} with type ${type} using topic '${topic_tmpl}'"
-#     echo $cmd >> /etc/vcontrold/1_mqtt_commands.txt
-
-#     if [[ $type == "FLOAT" ]]; then
-#         payload='$'$i''
-#     elif [[ $type == "FLOAT1" ]]; then
-#         payload='$(printf "%.1f" "$'$i'")'
-#     elif [[ $type == "INT" ]]; then
-#         payload='$(printf "%.0f" "$'$i'")'
-#     elif [[ $type == "STRING" ]]; then
-#         payload='"$R'$i'"'
-#     else
-#         bashio::log.error "Unsupported type '${type}' for command ${cmd}. Supported types are FLOAT, INT, STRING."
-#         exit 1
-#     fi
-
-#     echo 'if [ "x$E'$i'" = "xOK" ]; then' >> /etc/vcontrold/2_mqtt.tmpl
-#     echo '  mosquitto_pub -h $MQTT_HOST -p $MQTT_PORT -u $MQTT_USER -P $MQTT_PASSWORD -t "'${topic_tmpl}'" -m '${payload}'' >> /etc/vcontrold/2_mqtt.tmpl
-#     echo 'fi' >> /etc/vcontrold/2_mqtt.tmpl
-
-#     # Publish meta information for HomA integration
-#     mosquitto_pub -h "$MQTT_HOST" -p "$MQTT_PORT" -u "$MQTT_USER" -P "$MQTT_PASSWORD" \
-#         -t "$(get_homa_topic controls "$topic" meta/type)" -m "text" #-r
-#     mosquitto_pub -h "$MQTT_HOST" -p "$MQTT_PORT" -u "$MQTT_USER" -P "$MQTT_PASSWORD" \
-#         -t "$(get_homa_topic controls "$topic" meta/order)" -m "$i" #-r
-#     # Set unit if available
-#     if [[ -n "${unit}" ]]; then
-#         mosquitto_pub -h "$MQTT_HOST" -p "$MQTT_PORT" -u "$MQTT_USER" -P "$MQTT_PASSWORD" \
-#             -t "$(get_homa_topic controls "$topic" meta/unit)" -m " $unit" #-r
-#     else
-#         mosquitto_pub -h "$MQTT_HOST" -p "$MQTT_PORT" -u "$MQTT_USER" -P "$MQTT_PASSWORD" \
-#             -t "$(get_homa_topic controls "$topic" meta/unit)" -m "" #-r
-#     fi
-
-#     # Publish Home Assistant autoconfiguration message
-#     homeassistant_config "_$topic" "_$class" "_$unit" "_$template"
-# done < <(yq -r '.commands[] | "_" +
-#     (.command // "") + "\t_" +
-#     (.type // "") + "\t_" +
-#     (.topic // "") + "\t_" +
-#     (.class // "") + "\t_" +
-#     (.unit // "") + "\t_" +
-#     (.template // "")' "$config_file_commands")
-#     # needs a leading underscore to avoid parameter shifting issues
-
 # Configure vcontrold.xml with the user-specified values
 sed -i "s/#DEVICEID#/$config_deviceid/g" "$config_file_vcontrold"
 sed -i "s|#VITOXML#|$config_file_vito|g" "$config_file_vcontrold"
@@ -227,9 +148,19 @@ else
     sed -i "s/#DEBUG#/n/g" "$config_file_vcontrold"
 fi
 
+# https://skarnet.org/software/s6/s6-notifyoncheck.html
+# -d : doublefork. s6-notifyoncheck will run as the grandchild of prog... instead of its direct child. This is useful if prog... never reaps zombies it does not know it has.
+# -s initialsleep : sleep for initialsleep milliseconds before starting to poll the service for readiness. Default is 10 milliseconds.
+# -w waitingtime : sleep for waitingtime milliseconds between two invocations of ./data/check. This is basically the polling period. Default is 1000: the service will be polled every second.
+# -n n : give up after n unsuccessful invocations of ./data/check. 0 means infinite, i.e. keep polling until it succeeds, or times out, or the service dies first. Default is 7.
+# -c checkprog... : invoke checkprog... instead of ./data/check. The checkprog string will be parsed by execlineb, so it can contain a full command line. This option is mainly useful is the program used to poll the service is very simple and can be inlined as a simple command line, to avoid needing to manage a whole script and a ./data/check file.
+s6-notifyoncheck -d -s 200 -w 1000 -n 10 \
+    -c 's6-tcpclient -v '$VCONTROL_HOST' '$VCONTROL_PORT' true' \
+    true
+
 # Start the vcontrold service or a dummy process for external control
 if [ "$VCONTROL_HOST" = "localhost" ]; then
-    bashio::log.info "Starting local vcontrold..."
+    bashio::log.info "Starting local vcontrold ..."
     exec /usr/sbin/vcontrold -x "$config_file_vcontrold" -n -U root -d "$config_tty"
 else
     bashio::log.info "vcontrold is not running locally. Keeping process alive."
