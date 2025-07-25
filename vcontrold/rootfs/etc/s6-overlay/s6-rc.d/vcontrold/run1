@@ -1,0 +1,80 @@
+#!/usr/bin/with-contenv bashio
+# Start your service in background
+#SCRIPTPATH="$( cd "$(dirname "$0")" ; pwd )"
+#SCRIPTPATH="/etc/s6-overlay/s6-rc.d/vcontrold"
+SCRIPTPATH="/etc/services.d"
+exec $SCRIPTPATH/start-vcontrold.sh &
+vcontrold_pid=$!
+
+# s6-notifyoncheck parameter
+# -d : doublefork. s6-notifyoncheck will run as the grandchild of prog... instead of its direct child. This is useful if prog... never reaps zombies it does not know it has.
+# -3 notiffd : use notiffd as the file descriptor to send a readiness notification to. By default, this number is automatically read from the ./notification-fd file.
+# -s initialsleep : sleep for initialsleep milliseconds before starting to poll the service for readiness. Default is 10 milliseconds.
+# -T globaltimeout : give up (and leave the service up but not ready) if service readiness still has not been detected after globaltimeout milliseconds. Default is 0, meaning infinite: s6-notifyoncheck will keep polling until it succeeds.
+# -t localtimeout : on every attempt, if ./data/check still has not exited after localtimeout milliseconds, kill it and declare that attempt failed. Default is 0, meaning infinite: s6-notifyoncheck will wait forever for ./data/check to exit.
+# -w waitingtime : sleep for waitingtime milliseconds between two invocations of ./data/check. This is basically the polling period. Default is 1000: the service will be polled every second.
+# -n n : give up after n unsuccessful invocations of ./data/check. 0 means infinite, i.e. keep polling until it succeeds, or times out, or the service dies first. Default is 7.
+# -c checkprog... : invoke checkprog... instead of ./data/check. The checkprog string will be parsed by execlineb, so it can contain a full command line. This option is mainly useful is the program used to poll the service is very simple and can be inlined as a simple command line, to avoid needing to manage a whole script and a ./data/check file. This option is only supported if the execline package is installed; if it is not, the -c option cannot be used and the checking script must always be placed in ./data/check.
+#
+# s6-tcpclient parameter
+# -q : be quiet.
+# -Q : be normally verbose. This is the default.
+# -v : be verbose.
+# -h : Consult the /etc/hosts database before performing DNS queries. The default, when this option is not given, is to ignore /etc/hosts. The -H option overrides -h and voids any kind of lookup.
+# -H : do not try and obtain the local or remote host names via DNS. The default, when this option is not given, is to look up the local and remote host IPs in the DNS database to get the corresponding names.
+# -n : qualify host when resolving it to find suitable IP addresses.
+# -N : do not qualify host. This is the default.
+# -t :timeout : put a global timeout on the connection attempt. If no fully functional connection has been established after timeout seconds, abort the program. By default, timeout is 0, which means no timeout.
+# -T :timeoutconn : configure the connection timeouts. timeoutconn must be of the form x+y, where x and y are integers. x is the first timeout and y is the second one: all suitable addresses for host are first tried with a timeout of x seconds, and if all of them fail, then they are tried again with a timeout of y seconds. (Be aware that the timeout specified with the -t option overrides everything.) By default, x is 2 and y is 58.
+s6-notifyoncheck -d -s 7000 -w 1000 -n 10 \
+  -c 's6-tcpclient -q localhost 3002 true' \
+  true
+bashio::log.info "s6-notifyoncheck terminated ..."
+
+# Warten auf beendigung von start-vcontrold.sh
+wait $vcontrold_pid
+bashio::log.info "wait terminated! Doing tail -f /dev/null now ..."
+tail -f /dev/null
+
+# Warte bis Port 3002 lauscht (z. B. mit timeout 10s)
+for i in {1..20}; do
+  if nc -z localhost 3002; then
+    break
+  fi
+  sleep 0.5
+done
+
+# → readiness melden, wenn NOTIFY_FD gesetzt ist
+# if [[ -n "$NOTIFY_FD" ]]; then
+#   echo "Sending readiness notification to fd $NOTIFY_FD"
+#   exec {fd}>&"$NOTIFY_FD"
+#   echo >"/dev/fd/$fd"
+# fi
+if [ ! -z "${NOTIFY_FD:-}" ]; then
+  echo "Sending readiness notification to fd $NOTIFY_FD"
+  exec {fd}>&"$NOTIFY_FD"
+  echo >"/dev/fd/$fd"
+else
+  echo "NOTIFY_FD is not set, skipping readiness notification"
+fi
+
+# s6-notifyoncheck -d \
+#   -c 's6-tcpclient -T 2 127.0.0.1 3002 true' \
+#   s6-sleep 3600
+  
+# Warten auf beendigung von start-vcontrold.sh
+wait $vcontrold_pid
+
+
+# #! /usr/bin/execlineb -P
+# fdmove -c 3 1
+# exec /etc/s6-overlay/s6-rc.d/vcontrold/start-vcontrold.sh
+# s6-notifyoncheck -s 2000 -n 10 -w 1000 \
+#   -c "s6-tcpcheck -r 1 localhost 3002" \
+#   /etc/s6-overlay/s6-rc.d/vcontrold/start-vcontrold.sh
+
+# fdmove -c 2 1
+# foreground {
+#   /etc/services.d/vcontrold/start-vcontrold.sh
+# }
+# s6-notifyoncheck -d 2000 -r 10 -w 1000 s6-tcpcheck -r 1 localhost 3002
