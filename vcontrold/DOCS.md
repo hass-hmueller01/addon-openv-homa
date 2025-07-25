@@ -1,4 +1,4 @@
-# Home Assistant Add-on: OpenV vcontrold to HomA MQTT add-on
+# Home Assistant add-on: OpenV vcontrold to HomA MQTT
 
 ## How to use
 Once installed, the plugin fetches data from `vcontrold` and pushes it to the HomA MQTT topic `/devices/<systemID>/controls/<topic>` by executing the commands provided in the configuration and pushing the returned values into a correnspoding topic for that specific command. A list of all possible commands and formats can be found in **/etc/vcontrold/vito.xml**.
