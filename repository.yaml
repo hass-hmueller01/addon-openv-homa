@@ -1,7 +1,4 @@
 # https://developers.home-assistant.io/docs/add-ons/repository#repository-configuration
-name: OpenV vcontrold to HomA MQTT add-on repository
+name: HomA MQTT add-ons
 url: "https://github.com/hass-hmueller01/addon-openv-homa"
 maintainer: Holger Mueller <hmueller01@users.noreply.github.com>
-description: |
-  This repository contains the openV vcontrold to HomA MQTT Home Assistant add-on.
-  It provides a way to control and monitor your vcontrold compatible heating system using the HomA MQTT framework.
