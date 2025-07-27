@@ -12,3 +12,4 @@ labels:
   org.opencontainers.image.licenses: "MIT License"
 args:
   TEMPIO_VERSION: "2021.09.0"
+squash: true
