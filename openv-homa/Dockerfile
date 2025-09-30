@@ -11,6 +11,8 @@ RUN \
     curl -sSLf -o /usr/bin/tempio \
     "https://github.com/home-assistant/tempio/releases/download/${TEMPIO_VERSION}/tempio_${BUILD_ARCH}"
 
+RUN echo "alias l='ls --color=auto -alF'" >> /root/.bashrc
+
 RUN \
     apt-get update && \
     apt-get upgrade -y && \
@@ -29,6 +31,5 @@ RUN \
 
 # Copy root filesystem
 COPY rootfs /
-COPY bashrc /root/.bashrc
 
 ENTRYPOINT ["/init"]
