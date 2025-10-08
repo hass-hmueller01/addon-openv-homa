@@ -66,12 +66,11 @@ get_device_name_from_xml() {
 
 # Setup Home Assistant
 model_name=$(get_device_name_from_xml)
-manufacturer="Viesmann"
+manufacturer="Viessmann"
 sw_version=$(bashio::addon.version)
 
-# Publish HomA room and device meta
-publish_topic "$(get_homa_topic meta/room)" "$config_room"
-publish_topic "$(get_homa_topic meta/name)" "$config_device"
+# Publish HomA device and room meta
+homasystem_config "_$config_device" "_$config_room"
 
 # Cleanup old scripts
 rm -f /etc/vcontrold/1_mqtt_commands.txt /etc/vcontrold/2_mqtt.tmpl || true
@@ -86,7 +85,7 @@ config_commands=$(bashio::config 'commands')
 while read -r line; do
     ((i=i+1))
     # line is a JSON-Line, e.g. {"command":"getTempRaumM2","type":"FLOAT1","topic":"Raumtemperatur","unit":"°C","class":"temperature"}
-    IFS=$'\t' read -r cmd type topic class unit template < <(echo "$line" | jq -r '"_" + 
+    IFS=$'\t' read -r cmd type topic class unit template < <(echo "$line" | jq -r '"_" +
     (.command // "") + "\t_" + (.type // "") + "\t_" + (.topic // "") + "\t_" +
     (.class // "") + "\t_" + (.unit // "") + "\t_" + (.template // "")')
     cmd="${cmd#_}"  # Remove added leading underscore to avoid parameter shifting issues
@@ -129,9 +128,7 @@ while read -r line; do
     echo 'fi' >> /etc/vcontrold/2_mqtt.tmpl
 
     # Publish meta information for HomA integration
-    publish_topic "$(get_homa_topic controls "$topic" meta/type)" "text"
-    publish_topic "$(get_homa_topic controls "$topic" meta/order)" "$i"
-    publish_topic "$(get_homa_topic controls "$topic" meta/unit)" " $unit"
+    homacontrol_config "_$topic" "_text" "_$i" "_$unit"
 
     # Publish Home Assistant autoconfiguration message
     homeassistant_config "_$topic" "_$topic" "_$class" "_$unit" "_$template"

@@ -7,6 +7,7 @@
 #
 # v001 2025-07-17 hmueller01 Initial version
 # v002 2025-07-21 hmueller01 Added mosquitto_pub retry logic, added homeassistant_config output
+# v003 2025-10-08 hmueller01 Added homasystem_config and homacontrol_config functions
 # ==============================================================================
 
 # Create HomA topic string with up to 3 levels of hierarchy
@@ -60,13 +61,45 @@ publish_topic() {
     [[ $errexit ]] && set -e
 }
 
+# Publish system meta information for HomA integration (room, name)
+# Usage: homasystem_config _<name> _<room>
+# Note: Alwasy removes the leading underscore from parameters! Needed to avoid parameter shifting issues.
+# Parameters:
+# - name: The HomA system name
+# - room: The HomA system room name
+# Requires globals: config_systemid
+homasystem_config() {
+    local name="${1#_}" # Remove leading underscore
+    local room="${2#_}"
+    publish_topic "$(get_homa_topic meta/name)" "$name"
+    publish_topic "$(get_homa_topic meta/room)" "$room"
+
+# Publish control meta information for HomA integration (type, order, unit)
+# Usage: homacontrol_config _<control_id> _<type> _order [_<unit>]
+# Note: Alwasy removes the leading underscore from parameters! Needed to avoid parameter shifting issues.
+# Parameters:
+# - control_id: The HomA control_id for the control (/devices/$systemid/controls/$control_id)
+# - type: The control type (e.g. text, switch, range)
+# - order: The order of the control (integer)
+# - unit: The unit of the control (optional)
+# Requires globals: config_systemid
+homacontrol_config() {
+    local control_id="${1#_}" # Remove leading underscore
+    local type="${2#_}"
+    local order="${3#_}"
+    local unit="${4:-}" && unit="${unit#_}" # Default to empty if not provided, remove leading underscore
+    publish_topic "$(get_homa_topic controls "$control_id" meta/type)" "$type"
+    publish_topic "$(get_homa_topic controls "$control_id" meta/order)" "$order"
+    [[ -n "$unit" ]] && publish_topic "$(get_homa_topic controls "$control_id" meta/unit)" " $unit"
+}
+
 # Publish a Home Assistant autoconfiguration message for a sensor
 # Usage: homeassistant_config _<topic> _<class> [_<unit>] [_<template>]
 # Note: Alwasy removes the leading underscore from parameters! Needed to avoid parameter shifting issues.
 # Parameters:
-# - name: The name of the sensor (e.g., "Current Power")
+# - name: The name of the sensor (e.g. "Current Power")
 # - topic: The MQTT topic for the sensor
-# - class: The device class (e.g., temperature, power_factor, etc.)
+# - class: The device class (e.g. temperature, power_factor, etc.)
 # - unit: The unit of measurement (optional)
 # - template: The value template for the sensor (optional)
 # Requires globals: config_systemid, config_area, config_device, model_name, manufacturer
