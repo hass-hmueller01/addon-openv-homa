@@ -73,6 +73,7 @@ homasystem_config() {
     local room="${2#_}"
     publish_topic "$(get_homa_topic meta/name)" "$name"
     publish_topic "$(get_homa_topic meta/room)" "$room"
+}
 
 # Publish control meta information for HomA integration (type, order, unit)
 # Usage: homacontrol_config _<control_id> _<type> _order [_<unit>]
