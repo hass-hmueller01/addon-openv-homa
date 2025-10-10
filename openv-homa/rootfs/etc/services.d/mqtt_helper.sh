@@ -91,7 +91,10 @@ homacontrol_config() {
     local unit="${4:-}" && unit="${unit#_}" # Default to empty if not provided, remove leading underscore
     publish_topic "$(get_homa_topic controls "$control_id" meta/type)" "$type"
     publish_topic "$(get_homa_topic controls "$control_id" meta/order)" "$order"
-    [[ -n "$unit" ]] && publish_topic "$(get_homa_topic controls "$control_id" meta/unit)" " $unit"
+    if [[ -n "$unit" ]]; then
+         publish_topic "$(get_homa_topic controls "$control_id" meta/unit)" " $unit"
+    fi
+    bashio::config.true 'debug' && bashio::log.info "Published HomA control config '$control_id': $type, $order" || true
 }
 
 # Publish a Home Assistant autoconfiguration message for a sensor
@@ -174,5 +177,5 @@ homeassistant_config() {
 
     # Publish to MQTT
     publish_topic "$ha_topic" "$payload" true
-    bashio::log.info "Published Home Assistant config for $name to $ha_topic"
+    bashio::config.true 'debug' && bashio::log.info "Published Home Assistant config for $name to $ha_topic" || true
 }
