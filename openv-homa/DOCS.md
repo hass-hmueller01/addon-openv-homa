@@ -140,7 +140,7 @@ mqtt:
       device:
         identifiers: vcontrold
         manufacturer: Viessmann
-      value_template: | 
+      value_template: |
         {{ value|round(0) }}
       payload_on: 1
       payload_off: 0
@@ -155,4 +155,23 @@ Ensure the files are placed in the specified path of your Home Assistant install
 ```
 config/vcontrold/vito.xml
 config/vcontrold/vcontrold.xml
+```
+
+The `vcontrold.xml` should use the tags `#DEBUG#`, `#DEVICEID#` and `#VITOXML#` to use the add-on configuration.
+```xml
+  <unix>
+    <config>
+      ...
+      <logging>
+        <file>/dev/stdout</file>
+        <syslog>n</syslog>
+        <debug>#DEBUG#</debug>
+      </logging>
+      <device ID="#DEVICEID#"/>
+    </config>
+  </unix>
+...
+  <extern xmlns:xi="http://www.w3.org/2003/XInclude">
+    <xi:include href="#VITOXML#" parse="xml"/>
+  </extern>
 ```
