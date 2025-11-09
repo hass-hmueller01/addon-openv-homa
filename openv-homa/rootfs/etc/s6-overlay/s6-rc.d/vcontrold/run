@@ -14,7 +14,7 @@ declare config_systemid
 declare config_device
 declare config_room
 declare config_area
-declare config_areadeclare config_file_vito="/etc/vcontrold/vito.xml"
+declare config_file_vito="/etc/vcontrold/vito.xml"
 declare config_file_vcontrold="/etc/vcontrold/vcontrold.xml"
 declare config_commands
 declare model_name
@@ -39,7 +39,7 @@ config_area=$(bashio::config 'hass_area')
 # Check if custom vito.xml file exists
 if [ -f "/config/vcontrold/vito.xml" ]; then
     bashio::log.info "Using custom vito.xml file."
-    config_file_vito="/config/vcontrold/vito.xml"
+    cp "/config/vcontrold/vito.xml" "${config_file_vito}"
 else
     bashio::log.info "Using default vito.xml file."
 fi
@@ -47,7 +47,7 @@ fi
 # Check if custom vcontrold.xml file exists
 if [ -f "/config/vcontrold/vcontrold.xml" ]; then
     bashio::log.info "Using custom vcontrold.xml file."
-    config_file_vcontrold="/config/vcontrold/vcontrold.xml"
+    cp "/config/vcontrold/vcontrold.xml" "${config_file_vcontrold}"
 else
     bashio::log.info "Using default vcontrold.xml file."
 fi
