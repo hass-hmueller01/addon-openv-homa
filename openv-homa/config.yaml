@@ -1,6 +1,6 @@
 # https://developers.home-assistant.io/docs/add-ons/configuration#add-on-config
 name: OpenV vcontrold to HomA MQTT
-version: "0.1.10"
+version: "1.0.0"
 slug: openv-homa
 description: Connect a Vito heating system using the HomA MQTT framework
 url: "https://github.com/hass-hmueller01/addon-openv-homa"
@@ -9,11 +9,8 @@ url: "https://github.com/hass-hmueller01/addon-openv-homa"
 image: "hmueller01/homeassistant-addon-openv-homa-{arch}" # on https://hub.docker.com
 #image: "alexandreio/{arch}-homeassistant-vcontrol"
 arch:
-  - armhf
-  - armv7
   - aarch64
   - amd64
-  - i386
 init: false
 options:
   tty: "/dev/ttyUSB0"
