@@ -9,8 +9,8 @@ url: "https://github.com/hass-hmueller01/addon-openv-homa"
 image: "hmueller01/homeassistant-addon-openv-homa-{arch}" # on https://hub.docker.com
 #image: "alexandreio/{arch}-homeassistant-vcontrol"
 arch:
-  - armhf
-  - armv7
+  - aarch64
+  - amd64
 init: false
 options:
   tty: "/dev/ttyUSB0"
