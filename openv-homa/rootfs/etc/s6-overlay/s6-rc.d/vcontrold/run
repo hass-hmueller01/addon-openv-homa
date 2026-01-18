@@ -20,13 +20,13 @@ declare config_commands
 declare model_name
 
 # Fetch MQTT settings
-source /etc/services.d/get_mqtt_settings.sh
+source get_mqtt_settings.sh
 
 # Fetch vcontrold settings
-source /etc/services.d/get_vcontrold_settings.sh
+source get_vcontrold_settings.sh
 
 # Import helper functions
-source /etc/services.d/mqtt_helper.sh
+source mqtt_helper.sh
 
 # Get configuration options from user
 config_tty=$(bashio::config 'tty')
