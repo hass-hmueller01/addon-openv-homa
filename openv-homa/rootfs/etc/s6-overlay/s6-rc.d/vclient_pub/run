@@ -7,10 +7,10 @@
 bashio::log.info "vclient_pub service starting ..."
 
 # Fetch MQTT settings
-source /etc/services.d/get_mqtt_settings.sh
+source get_mqtt_settings.sh
 
 # Fetch Vcontrold settings
-source /etc/services.d/get_vcontrold_settings.sh
+source get_vcontrold_settings.sh
 
 # Ensure required variables are set
 if [[ -z "$REFRESH_RATE" || -z "$VCONTROL_HOST" || -z "$VCONTROL_PORT" ]]; then

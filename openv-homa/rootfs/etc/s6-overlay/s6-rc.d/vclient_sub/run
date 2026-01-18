@@ -11,10 +11,10 @@ bashio::log.warning "vclient_sub run: Setting Vcontrold values over MQTT is not 
 tail -f /dev/null  # Wait here indefinitely to prevent the script from exiting
 
 # Fetch MQTT settings
-source /etc/services.d/get_mqtt_settings.sh
+source get_mqtt_settings.sh
 
 # Fetch Vcontrold settings
-source /etc/services.d/get_vcontrold_settings.sh
+source get_vcontrold_settings.sh
 
 # Ensure required environment variables are set
 if [[ -z "$MQTT_HOST" || -z "$MQTT_PORT" || -z "$MQTT_USER" || -z "$MQTT_PASSWORD" || -z "$MQTT_TOPIC" || -z "$VCONTROL_HOST" || -z "$VCONTROL_PORT" ]]; then
