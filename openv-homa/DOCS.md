@@ -5,11 +5,9 @@ Once installed, the plugin fetches data from `vcontrold` and pushes it to the [H
 
 Example: Command `getTempAtp` is executed and its return value is pushed into topic `/devices/123456-vito/controls/Aussentemperatur`.
 
-**TODO: Writing values is not yet implemented.**
+If you want to set values / write to Vitodens you need to configure the `setcmd` option in the commands setting. Writing to a topic `/devices/<systemID>/controls/<topic>/on` that has the setter command configured as specified in **/etc/vcontrold/vito.xml** will execute the vclient write command.
 
-If you want to set values / write to Vitodens, simply write to a topic that has the man of the setter command as specified in **/etc/vcontrold/vito.xml**.
-
-Example: Writing a value to the topic `openv/setTempWWSoll` will set the target temperature for hot water to a new value. You will be able to see it in `opemv/getTempWWSoll` in the next readout cycle.
+Example: Writing a value to the topic `/devices/123456-vito/controls/Warmwassertemperatur soll/on` will set the target temperature for hot water to a new value by using the vclient command `setTempWWsoll`. You will be able to see it in `/devices/123456-vito/controls/Warmwassertemperatur soll` in the next readout cycle.
 
 ## Configuration
 
@@ -24,130 +22,43 @@ Select a _refresh rate_ that defines the interval used for polling your device a
 The commands section can be edited and extended in YAML mode, e.g.
 ```yaml  commands:
     - command: "getTempRaumRedSollM2"
-      type: "FLOAT1"
+      setcmd: "setTempRaumRedSollM2"
+      type: "INT"
       topic: "Raumtemperatur reduziert soll"
       unit: "°C"
       class: "temperature"
     - command: "getTempRaumNorSollM2"
-      type: "FLOAT1"
+      setcmd: "setTempRaumNorSollM2"
+      type: "INT"
       topic: "Raumtemperatur soll"
       unit: "°C"
       class: "temperature"
-    - command: "getTempRaumM2"
-      type: "FLOAT1"
-      topic: "Raumtemperatur"
-      unit: "°C"
-      class: "temperature"
-    - command: "getTempAtp"
-      type: "FLOAT1"
-      topic: "Aussentemperatur"
-      unit: "°C"
-      class: "temperature"
-    - command: "getTempKist"
-      type: "FLOAT1"
-      topic: "Kesseltemperatur"
-      unit: "°C"
-      class: "temperature"
-    - command: "getTempKsoll"
-      type: "FLOAT1"
-      topic: "Kesseltemperatur soll"
-      unit: "°C"
-      class: "temperature"
-    - command: "getTempVListM2"
-      type: "FLOAT1"
-      topic: "Vorlauftemperatur"
-      unit: "°C"
-      class: "temperature"
-    - command: "getTempVLsollM2"
-      type: "FLOAT1"
-      topic: "Vorlauftemperatur soll"
-      unit: "°C"
-      class: "temperature"
-    - command: "getTempStp"
-      type: "FLOAT1"
-      topic: "Warmwassertemperatur"
-      unit: "°C"
-      class: "temperature"
-    - command: "getLeistungIst"
-      type: "FLOAT1"
-      topic: "Leistung"
-      unit: "%"
-      class: "power_factor"
-    - command: "getPumpeStatusM2"
-      type: "STRING"
-      topic: "Heizkreispumpe"
-      class: "enum"
-      template: "{% set mapper = {'0':'AUS', '1':'EIN', '2':'Nacht'} %} {{ mapper[value] if value in mapper else 'Unknown ' + value }}"
-    - command: "getBetriebArtM2"
-      type: "STRING"
-      topic: "Betriebsart"
-      class: "enum"
-    - command: "getUmschaltventil"
-      type: "STRING"
-      topic: "Umschaltventil"
-      class: "enum"
-    - command: "getBrennerStarts"
-      type: "INT"
-      topic: "Brennerstarts"
-      class: "_int"
-    - command: "getBrennerStunden1"
-      type: "FLOAT"
-      topic: "Brennerstunden"
-      unit: "h"
-      class: "duration"
-    - command: "getTempAbgas"
-      type: "FLOAT1"
-      topic: "Abgastemperatur"
-      unit: "°C"
-      class: "temperature"
-    - command: "getSystemTime"
-      type: "STRING"
-      topic: "Vito Zeit"
-      class: "_datetime"
 ```
+
+`command` and `setcmd` can be taken from [vito.xml](rootfs/etc/vcontrold/vito.xml).
+
+`type` can be `INT` for integer, `FLOAT` for decimal values, `FLOAT1` for floats with one decimal place, `STRING` for strings.
+
+`class` is the Home Assistant sensor class like `temperature`, `power` and so on. See [Available device classes](https://developers.home-assistant.io/docs/core/entity/sensor/#available-device-classes).
 
 ### Integration into Home Assistant
 Integration in Home Assistant is done automatically by the setttings in die `commands` section of the config.
 
-To create entities in Home Assistant, you need to configure MQTT sensors - short example with getters and setters (taken from https://github.com/Alexandre-io/homeassistant-vcontrol/issues/7):
-```yaml
-mqtt:
-  binary_sensor:
-    - name: "Status Zirklulationspumpe"
-      unique_id: "vcontroldgetPumpeStatusZirku"
-      state_topic: "openv/getPumpeStatusZirku"
-      device_class: running
-      value_template: "{% if(value|int == '0') %}OFF{% else %}ON{% endif %}"
-      device:
-        identifiers: vcontrold
-        manufacturer: Viessmann
-  sensor:
-    - name: "Aussentemperatur"
-      unique_id: "vcontroldgetTempA"
-      device_class: temperature
-      state_topic: "openv/getTempA"
-      unit_of_measurement: "°C"
-      value_template: |-
-        {{ value | round(2) }}
-      device:
-        identifiers: vcontrold
-        manufacturer: Viessmann
+To be able to write (set values) in Home Assistant, manual configuration is needed. For numbers (like the hot water in the example above) a slider can be used. This is done by creating a number helper and an automation doing some of the work.
 
-  switch:
-    - name: "Betriebsart Party"
-      unique_id: "vcontroldgetBetriebPartyM1"
-      state_topic: "openv/getBetriebPartyM1"
-      command_topic: "openv/setBetriebPartyM1"
-      device:
-        identifiers: vcontrold
-        manufacturer: Viessmann
-      value_template: |
-        {{ value|round(0) }}
-      payload_on: 1
-      payload_off: 0
-      state_on: 1
-      state_off: 0
+#### Blueprints
+But [mqtt-slider-sync.yaml](config/blueprints/automation/openv-homa/mqtt-slider-sync.yaml) into `config/blueprints/automation/openv-homa` folder of your Home Assistant installation.
+
+#### Numbers
+Config the silder numbers in [openv_input_numbers.yaml](config/input_numbers/openv_input_numbers.yaml) and put it into `config/input_numbers` folder of your Home Assistant installation.
+To load these numbers add
 ```
+input_number: !include_dir_merge_named input_numbers
+```
+in your `configuration.yaml`
+
+After that you can add the number entity to your dashboard and modify the value. In the add-on log you will see if the new value gets set.
+
 ### Custom vito.xml / vcontrold.xml configuration file
 
 The module use the `config` option (refer to https://developers.home-assistant.io/docs/add-ons/configuration/#add-on-advanced-options) for mounting a custom configuration file. It verifies the existence of a 'vito.xml' and 'vcontrold.xml' file during startup.
