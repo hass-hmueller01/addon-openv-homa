@@ -1,6 +1,6 @@
 # https://developers.home-assistant.io/docs/add-ons/configuration#add-on-config
 name: OpenV vcontrold to HomA MQTT
-version: "2.0.0-alpha.3"
+version: "2.0.0-alpha.4"
 slug: openv-homa
 description: Connect a Vito heating system using the HomA MQTT framework
 url: "https://github.com/hass-hmueller01/addon-openv-homa"
@@ -24,13 +24,13 @@ options:
   commands:
     - command: "getTempRaumRedSollM2"
       setcmd: "setTempRaumRedSollM2"
-      type: "FLOAT1"
+      type: "INT"
       topic: "Raumtemperatur reduziert soll"
       unit: "°C"
       class: "temperature"
     - command: "getTempRaumNorSollM2"
       setcmd: "setTempRaumNorSollM2"
-      type: "FLOAT1"
+      type: "INT"
       topic: "Raumtemperatur soll"
       unit: "°C"
       class: "temperature"
@@ -71,7 +71,7 @@ options:
       class: "temperature"
     - command: "getTempWWsoll"
       setcmd: "setTempWWsoll"
-      type: "FLOAT1"
+      type: "INT"
       topic: "Warmwassertemperatur soll"
       unit: "°C"
       class: "temperature"
