@@ -73,7 +73,7 @@ sw_version=$(bashio::addon.version)
 homasystem_config "_$config_device" "_$config_room"
 
 # Cleanup old scripts
-rm -f /etc/vcontrold/1_mqtt_commands.txt /etc/vcontrold/2_mqtt.tmpl || true
+rm -f /etc/vcontrold/{1_mqtt_commands.txt,2_mqtt.tmpl,3_mqtt_setcmds.txt} || true
 echo '#!/bin/sh' > /etc/vcontrold/2_mqtt.tmpl
 
 # Parse commands of config data 'commands' and generate mqtt template file
@@ -85,10 +85,11 @@ config_commands=$(bashio::config 'commands')
 while read -r line; do
     ((i=i+1))
     # line is a JSON-Line, e.g. {"command":"getTempRaumM2","type":"FLOAT1","topic":"Raumtemperatur","unit":"°C","class":"temperature"}
-    IFS=$'\t' read -r cmd type topic class unit template < <(echo "$line" | jq -r '"_" +
-    (.command // "") + "\t_" + (.type // "") + "\t_" + (.topic // "") + "\t_" +
-    (.class // "") + "\t_" + (.unit // "") + "\t_" + (.template // "")')
+    IFS=$'\t' read -r cmd setcmd type topic class unit template < <(echo "$line" | jq -r '"_" +
+    (.command // "") + "\t_" + (.setcmd // "") + "\t_" + (.type // "") + "\t_" +
+    (.topic // "") + "\t_" + (.class // "") + "\t_" + (.unit // "") + "\t_" + (.template // "")')
     cmd="${cmd#_}"  # Remove added leading underscore to avoid parameter shifting issues
+    setcmd="${setcmd#_}"
     type="${type#_}"
     topic="${topic#_}"
     class="${class#_}"
@@ -110,6 +111,11 @@ while read -r line; do
 
     bashio::log.info "Configuring cmd ${i}: ${cmd} with type ${type} using topic '${topic_tmpl}'"
     echo $cmd >> /etc/vcontrold/1_mqtt_commands.txt
+
+    if [[ ! -z "$setcmd" ]]; then
+        bashio::log.info "Configuring setcmd ${i}: ${setcmd} using topic '${topic_tmpl}/on'"
+        printf '%s\t%s\n' "${topic_tmpl}/on" "${setcmd}" >> /etc/vcontrold/3_mqtt_setcmds.txt
+    fi
 
     if [[ $type == "FLOAT" ]]; then
         payload='$'$i''
