@@ -126,7 +126,7 @@ while read -r line; do
     elif [[ $type == "STRING" ]]; then
         payload='"$R'$i'"'
     else
-        bashio::exit.nok "Unsupported type '${type}' for command ${cmd}. Supported types are FLOAT, INT, STRING."
+        bashio::exit.nok "Unsupported type '${type}' for command ${cmd}. Supported types are FLOAT, FLOAT1, INT, STRING."
     fi
 
     echo 'if [ "x$E'$i'" = "xOK" ]; then' >> /etc/vcontrold/2_mqtt.tmpl
