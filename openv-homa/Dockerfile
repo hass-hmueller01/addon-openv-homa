@@ -14,23 +14,29 @@ RUN \
 
 RUN echo "alias l='ls --color=auto -alF'" >> /root/.bashrc
 
+# Install dependencies
 RUN \
     apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y build-essential git cmake telnet libxml2-dev mosquitto-clients yq xmlstarlet vim-tiny && \
     mkdir -p /usr/local/src && \
-    rm -rf /usr/local/src/* && \
     git -C /usr/local/src clone --depth 1 --branch $VCONTROLD_VERSION https://github.com/openv/vcontrold.git && \
+    git -C /usr/local/src clone --depth 1 --branch main https://github.com/hass-hmueller01/hass-addon-helper.git
+
+# Compile and install vcontrold, hass-addon-helper
+RUN \
     cd /usr/local/src/vcontrold && \
-    mkdir build && \
+    git pull && \
+    mkdir -p build && \
     cd build && \
     cmake -DMANPAGES=OFF .. && \
     make install && \
-    make clean && \
-    git -C /usr/local/src clone -b main https://github.com/hass-hmueller01/hass-addon-helper.git && \
     cd /usr/local/src/hass-addon-helper && \
-    make install && \
-    cd && \
+    git pull && \
+    make install
+
+# Cleanup
+RUN \
     apt-get purge -y --auto-remove build-essential git cmake && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/local/src/*
