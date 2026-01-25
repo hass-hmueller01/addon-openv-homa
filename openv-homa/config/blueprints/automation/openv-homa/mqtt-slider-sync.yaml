@@ -1,0 +1,62 @@
+blueprint:
+  name: Input Number ↔ MQTT Sync
+  description: Synchronizes an input_number with a MQTT topic in both directions.
+  domain: automation
+  input:
+    number_entity:
+      name: Input number
+      description: Input number of the slider, e.g. input_number.raumtemperatur_soll
+      selector:
+        entity:
+          domain: input_number
+
+    sensor_entity:
+      name: Sensor entity
+      description: Entity of the sensor, e.g. sensor.123456_vito_raumtemperatur_soll
+      selector:
+        entity:
+          domain: sensor
+
+    mqtt_topic_in:
+      name: HomA MQTT input topic
+      description: Full topic, e.g. /devices/123456-vito/controls/Raumtemperatur soll
+      default: "/devices/123456-vito/controls/"
+      selector:
+        text:
+
+mode: restart
+
+variables:
+  mqtt_topic_in: !input mqtt_topic_in
+  mqtt_topic_out: "{{ mqtt_topic_in }}/on"
+  sensor_entity: !input sensor_entity
+
+triggers:
+  - id: slider_update
+    trigger: state
+    entity_id: !input number_entity
+
+  - id: mqtt_update
+    trigger: mqtt
+    topic: !input mqtt_topic_in
+
+actions:
+  - choose:
+      # MQTT → Slider
+      - conditions: "{{ trigger.id == 'mqtt_update' }}"
+        sequence:
+          - service: input_number.set_value
+            target:
+              entity_id: !input number_entity
+            data:
+              value: "{{ trigger.payload | int }}"
+
+      # Slider → MQTT (only if ≠ sensor_entity to avoid setting same value)
+      - conditions: >
+          {{ trigger.id == 'slider_update'
+             and trigger.to_state.state | int != states(sensor_entity) | int }}
+        sequence:
+          - service: mqtt.publish
+            data:
+              topic: "{{ mqtt_topic_out }}"
+              payload: "{{ trigger.to_state.state | int }}"

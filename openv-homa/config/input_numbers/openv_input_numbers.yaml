@@ -1,0 +1,24 @@
+raumtemperatur_soll:
+  name: "Raumtemperatur soll"
+  min: 0
+  max: 35
+  step: 1
+  icon: "mdi:thermometer"
+  unit_of_measurement: "°C"
+  mode: slider
+raumtemperatur_reduziert_soll:
+  name: "Raumtemperatur reduziert soll"
+  min: 0
+  max: 35
+  step: 1
+  icon: "mdi:thermometer"
+  unit_of_measurement: "°C"
+  mode: slider
+warmwasser_soll:
+  name: "Warmwassertemperatur soll"
+  min: 0
+  max: 75
+  step: 1
+  icon: "mdi:thermometer"
+  unit_of_measurement: "°C"
+  mode: slider
