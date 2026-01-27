@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Added
 - Implemented writing values (vclient_sub)
 - Added getTempWWsoll and setTempWWsoll
+### Changed
+- Set LOG_TIMESTAMP to %Y-%m-%d %T
 
 ## [1.0.1] - 2026-01-18
 ### Changed
