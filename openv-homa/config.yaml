@@ -86,6 +86,7 @@ options:
       class: "enum"
       template: "{% set mapper = {'0':'AUS', '1':'EIN', '2':'Nacht'} %} {{ mapper[value] if value in mapper else 'Unknown ' + value }}"
     - command: "getBetriebArtM2"
+      setcmd: "setBetriebArtM2"
       type: "STRING"
       topic: "Betriebsart"
       class: "enum"
