@@ -113,8 +113,8 @@ while read -r line; do
     echo $cmd >> /etc/vcontrold/1_mqtt_commands.txt
 
     if [[ ! -z "$setcmd" ]]; then
-        bashio::log.info "Configuring setcmd ${i}: ${setcmd} using topic '${topic_tmpl}/on'"
-        printf '%s\t%s\n' "${topic_tmpl}/on" "${setcmd}" >> /etc/vcontrold/3_mqtt_setcmds.txt
+        bashio::log.info "Configuring setcmd: ${setcmd} using topic '${topic_tmpl}/on'"
+        printf '%s\t%s\t%s\n' "${topic_tmpl}" "${cmd}" "${setcmd}" >> /etc/vcontrold/3_mqtt_setcmds.txt
     fi
 
     if [[ $type == "FLOAT" ]]; then
@@ -164,7 +164,8 @@ s6-notifyoncheck -d -s 200 -w 1000 -n 10 \
 # Start the vcontrold service or a dummy process for external control
 if [ "$VCONTROL_HOST" = "localhost" ]; then
     bashio::log.info "Starting local vcontrold ..."
-    exec /usr/sbin/vcontrold -x "$config_file_vcontrold" -n -U root -d "$config_tty"
+    bashio::config.true 'debug' && vcontrold_log="-l /dev/stdout" || vcontrold_log="-l /var/log/vcontrold.log"
+    exec /usr/sbin/vcontrold -x "$config_file_vcontrold" -n -U root -d "$config_tty" $vcontrold_log
 else
     bashio::log.info "vcontrold is not running locally. Keeping process alive."
     tail -f /dev/null
