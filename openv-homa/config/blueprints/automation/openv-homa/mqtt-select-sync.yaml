@@ -1,0 +1,62 @@
+blueprint:
+  name: Input Select ↔ MQTT Sync
+  description: Synchronizes an input_select with a MQTT topic in both directions.
+  domain: automation
+  input:
+    select_entity:
+      name: Input select
+      description: Input select entity, e.g. input_select.betriebsart
+      selector:
+        entity:
+          domain: input_select
+
+    sensor_entity:
+      name: Sensor entity
+      description: Entity of the sensor, e.g. sensor.123456_vito_betriebsart
+      selector:
+        entity:
+          domain: sensor
+
+    mqtt_topic_in:
+      name: HomA MQTT input topic
+      description: Full topic, e.g. /devices/123456-vito/controls/Betriebsart
+      default: "/devices/123456-vito/controls/"
+      selector:
+        text:
+
+mode: restart
+
+variables:
+  mqtt_topic_in: !input mqtt_topic_in
+  mqtt_topic_out: "{{ mqtt_topic_in }}/on"
+  sensor_entity: !input sensor_entity
+
+triggers:
+  - id: select_update
+    trigger: state
+    entity_id: !input select_entity
+
+  - id: mqtt_update
+    trigger: mqtt
+    topic: !input mqtt_topic_in
+
+actions:
+  - choose:
+      # MQTT → Select
+      - conditions: "{{ trigger.id == 'mqtt_update' }}"
+        sequence:
+          - action: input_select.select_option
+            target:
+              entity_id: !input select_entity
+            data:
+              option: "{{ trigger.payload | string }}"
+
+      # Select → MQTT (only if ≠ sensor_entity to avoid setting same value)
+      - conditions: >
+          {{ trigger.id == 'select_update'
+             and trigger.to_state.state | string != states(sensor_entity) | string }}
+        sequence:
+          - action: mqtt.publish
+            data:
+              topic: "{{ mqtt_topic_out }}"
+              payload: "{{ trigger.to_state.state | string }}"

@@ -1,0 +1,16 @@
+betriebsart:
+    name: "Betriebsart"
+    icon: "mdi:gas-burner"
+    options:
+        - "Abschalt"
+        - "WW"
+        - "H+WW"
+        - "Dauernd Reduziert"
+        - "Dauernd Normal"
+pumpe_status:
+    name: "Heizkreispumpe"
+    icon: "mdi:pump"
+    options:
+        - "AUS"
+        - "EIN"
+        - "Nacht"
