@@ -1,0 +1,8 @@
+/var/log/vcontrold.log {
+  rotate 3
+  monthly
+  compress
+  delaycompress
+  missingok
+  notifempty
+}
