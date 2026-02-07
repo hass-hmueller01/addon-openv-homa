@@ -39,7 +39,7 @@ RUN \
 RUN \
     apt-get purge -y --auto-remove build-essential git cmake && \
     apt-get clean && \
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/local/src/*
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /var/log/* /usr/local/src/*
 
 # Copy root filesystem
 COPY rootfs /
