@@ -27,20 +27,25 @@ if [ ! -f "$SETCMDS_FILE" ]; then
     tail -f /dev/null  # Wait here indefinitely to prevent the script from exiting
 fi
 
-while IFS=$'\t' read -r topic setcmd; do
+while IFS=$'\t' read -r topic cmd setcmd; do
     # Skip empty lines
     [ -z "$topic" ] && continue
 
     # Subscribe to each entry in the file
-    bashio::log.info "vclient_sub run: Starting MQTT subscription to topic: ${topic}"
-    mosquitto_sub -h "$MQTT_HOST" -p "$MQTT_PORT" -u "$MQTT_USER" -P "$MQTT_PASSWORD" -t "$topic" | while read -r payload; do
+    bashio::log.info "vclient_sub run: Starting MQTT subscription to topic: ${topic}/on"
+    mosquitto_sub -h "$MQTT_HOST" -p "$MQTT_PORT" -u "$MQTT_USER" -P "$MQTT_PASSWORD" -t "${topic}/on" | while read -r payload; do
         # Here is the callback to execute whenever you receive a message
-        bashio::log.info "vclient_sub run: Received topic: [${topic}]. Sending command: [${setcmd}]: ${payload}"
-        vclient -h $VCONTROL_HOST -p $VCONTROL_PORT -o /dev/stdout -c "${setcmd} ${payload}"
+        bashio::log.info "vclient_sub run: Received topic: ${topic}/on"
+        bashio::log.info "vclient_sub run: vclient command ${setcmd}, set value: ${payload}"
+        vclient -h $VCONTROL_HOST -p $VCONTROL_PORT -o /dev/null -c "${setcmd} ${payload}"
         exitcode=$?
         if [[ $exitcode -ne 0 ]]; then
-            bashio::log.error "vclient_sub run: vclient command [${setcmd}] failed with exit code ${exitcode}."
+            bashio::log.error "vclient_sub run: vclient command ${setcmd} failed with exit code ${exitcode}."
         fi
+        { read -r _; read -r setval; } < <(vclient -h $VCONTROL_HOST -p $VCONTROL_PORT -c "${cmd}")
+        bashio::log.info "vclient_sub run: vclient command ${cmd}, returned value: ${setval}"
+        bashio::log.info "vclient_sub run: Publishing to MQTT topic: ${topic}"
+        mosquitto_pub -h "$MQTT_HOST" -p "$MQTT_PORT" -u "$MQTT_USER" -P "$MQTT_PASSWORD" -t "${topic}" -m "${setval}"
     done &
 
 done < "$SETCMDS_FILE"
