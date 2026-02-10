@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 ### Added
 - Implemented writing values (vclient_sub)
-- Added getTempWWsoll and setTempWWsoll
+- Added get/setTempWWsoll, get/setBetriebSparM2, get/setBetriebPartyM2
 ### Changed
 - Set LOG_TIMESTAMP to %Y-%m-%d %T
 
