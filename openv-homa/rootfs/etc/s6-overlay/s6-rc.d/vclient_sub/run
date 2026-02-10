@@ -27,7 +27,7 @@ if [ ! -f "$SETCMDS_FILE" ]; then
     tail -f /dev/null  # Wait here indefinitely to prevent the script from exiting
 fi
 
-while IFS=$'\t' read -r topic cmd setcmd; do
+while IFS=$'\t' read -r topic cmd setcmd type; do
     # Skip empty lines
     [ -z "$topic" ] && continue
 
@@ -42,10 +42,21 @@ while IFS=$'\t' read -r topic cmd setcmd; do
         if [[ $exitcode -ne 0 ]]; then
             bashio::log.error "vclient_sub run: vclient command ${setcmd} failed with exit code ${exitcode}."
         fi
-        { read -r _; read -r setval; } < <(vclient -h $VCONTROL_HOST -p $VCONTROL_PORT -c "${cmd}")
-        bashio::log.info "vclient_sub run: vclient command ${cmd}, returned value: ${setval}"
+        result=$(vclient -h $VCONTROL_HOST -p $VCONTROL_PORT -c "${cmd}" -J)
+        if [[ $type == "FLOAT" ]]; then
+            payload=$(jq -r '.[0].value' <<< "$result")
+        elif [[ $type == "FLOAT1" ]]; then
+            payload=$(printf "%.1f" "$(jq -r '.[0].value' <<< "$result")")
+        elif [[ $type == "INT" ]]; then
+            payload=$(printf "%.0f" "$(jq -r '.[0].value' <<< "$result")")
+        elif [[ $type == "STRING" ]]; then
+            payload=$(jq -r '.[0].raw' <<< "$result")
+        else
+            bashio::exit.nok "Unsupported type '${type}' for command ${cmd}. Supported types are FLOAT, FLOAT1, INT, STRING."
+        fi
+        bashio::log.info "vclient_sub run: vclient command ${cmd}, returned value: ${payload}"
         bashio::log.info "vclient_sub run: Publishing to MQTT topic: ${topic}"
-        mosquitto_pub -h "$MQTT_HOST" -p "$MQTT_PORT" -u "$MQTT_USER" -P "$MQTT_PASSWORD" -t "${topic}" -m "${setval}"
+        mosquitto_pub -h "$MQTT_HOST" -p "$MQTT_PORT" -u "$MQTT_USER" -P "$MQTT_PASSWORD" -t "${topic}" -m "${payload}"
     done &
 
 done < "$SETCMDS_FILE"
