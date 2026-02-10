@@ -114,7 +114,7 @@ while read -r line; do
 
     if [[ ! -z "$setcmd" ]]; then
         bashio::log.info "Configuring setcmd: ${setcmd} using topic '${topic_tmpl}/on'"
-        printf '%s\t%s\t%s\n' "${topic_tmpl}" "${cmd}" "${setcmd}" >> /etc/vcontrold/3_mqtt_setcmds.txt
+        printf '%s\t%s\t%s\t%s\n' "${topic_tmpl}" "${cmd}" "${setcmd}" "${type}" >> /etc/vcontrold/3_mqtt_setcmds.txt
     fi
 
     if [[ $type == "FLOAT" ]]; then
