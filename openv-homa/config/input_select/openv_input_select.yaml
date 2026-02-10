@@ -1,4 +1,4 @@
-betriebsart:
+vito_betriebsart:
     name: "Betriebsart"
     icon: "mdi:gas-burner"
     options:
@@ -7,10 +7,15 @@ betriebsart:
         - "H+WW"
         - "Dauernd Reduziert"
         - "Dauernd Normal"
-pumpe_status:
-    name: "Heizkreispumpe"
-    icon: "mdi:pump"
+vito_sparbetrieb:
+    name: "Sparbetrieb"
+    icon: "mdi:leaf"
     options:
         - "AUS"
         - "EIN"
-        - "Nacht"
+vito_partybetrieb:
+    name: "Partybetrieb"
+    icon: "mdi:party-popper"
+    options:
+        - "AUS"
+        - "EIN"
