@@ -1,4 +1,4 @@
-raumtemperatur_soll:
+vito_raumtemperatur_soll:
   name: "Raumtemperatur soll"
   min: 0
   max: 35
@@ -6,7 +6,7 @@ raumtemperatur_soll:
   icon: "mdi:thermometer"
   unit_of_measurement: "°C"
   mode: slider
-raumtemperatur_reduziert_soll:
+vito_raumtemperatur_reduziert_soll:
   name: "Raumtemperatur reduziert soll"
   min: 0
   max: 35
@@ -14,7 +14,7 @@ raumtemperatur_reduziert_soll:
   icon: "mdi:thermometer"
   unit_of_measurement: "°C"
   mode: slider
-warmwasser_soll:
+vito_warmwasser_soll:
   name: "Warmwassertemperatur soll"
   min: 0
   max: 75
