@@ -1008,7 +1008,7 @@
         <len>1</len>
         <unit>BA4</unit>
       </device>
-    </command>   
+    </command>
     <!--  Betriebsart set  -->
     <command name="setBetriebArtM1" protocmd="setaddr">
       <addr>2301</addr>
@@ -1032,30 +1032,58 @@
     <command name="getBetriebSparM1" protocmd="getaddr">
       <addr>2302</addr>
       <len>1</len>
-      <unit>RT</unit>
+      <unit>RST</unit>
       <description>Betriebsart Spar M1</description>
+      <device ID="2053"/>
+    </command>
+    <command name="setBetriebSparM1" protocmd="setaddr">
+      <addr>2302</addr>
+      <len>1</len>
+      <unit>RST</unit>
+      <description>Setze Betriebsart Spar M1</description>
       <device ID="2053"/>
     </command>
     <command name="getBetriebSparM2" protocmd="getaddr">
       <addr>3302</addr>
       <len>1</len>
-      <unit>RT</unit>
+      <unit>RST</unit>
       <description>Betriebsart Spar M2</description>
+      <device ID="2053"/>
+    </command>
+    <command name="setBetriebSparM2" protocmd="setaddr">
+      <addr>3302</addr>
+      <len>1</len>
+      <unit>RST</unit>
+      <description>Setze Betriebsart Spar M2</description>
       <device ID="2053"/>
     </command>
     <!-- PARTYBETRIEB -->
     <command name="getBetriebPartyM1" protocmd="getaddr">
       <addr>2303</addr>
       <len>1</len>
-      <unit>RT</unit>
+      <unit>RST</unit>
       <description>Betriebsart Party M1</description>
+      <device ID="2053"/>
+    </command>
+    <command name="setBetriebPartyM1" protocmd="setaddr">
+      <addr>2303</addr>
+      <len>1</len>
+      <unit>RST</unit>
+      <description>Setze Betriebsart Party M1</description>
       <device ID="2053"/>
     </command>
     <command name="getBetriebPartyM2" protocmd="getaddr">
       <addr>3303</addr>
       <len>1</len>
-      <unit>RT</unit>
+      <unit>RST</unit>
       <description>Betriebsart Party M2</description>
+      <device ID="2053"/>
+    </command>
+    <command name="setBetriebPartyM2" protocmd="setaddr">
+      <addr>3303</addr>
+      <len>1</len>
+      <unit>RST</unit>
+      <description>Setze Betriebsart Party M2</description>
       <device ID="2053"/>
     </command>
     <command name="getTempPartyM1" protocmd="getaddr">
@@ -1084,20 +1112,6 @@
       <len>1</len>
       <unit>ST</unit>
       <description>Setze die Warmwassersolltemperatur Party M2 in Grad C</description>
-      <device ID="2053"/>
-    </command>
-    <command name="setBetriebPartyM1" protocmd="setaddr">
-      <addr>2303</addr>
-      <len>1</len>
-      <unit>RT</unit>
-      <description>Setze Betriebsart Party M1</description>
-      <device ID="2053"/>
-    </command>
-    <command name="setBetriebPartyM2" protocmd="setaddr">
-      <addr>3303</addr>
-      <len>1</len>
-      <unit>RT</unit>
-      <description>Setze Betriebsart Party M2</description>
       <device ID="2053"/>
     </command>
     <!-- EXTERNES SPERREN und ANFORDERN -->
