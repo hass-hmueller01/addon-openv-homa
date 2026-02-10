@@ -1,6 +1,6 @@
 # https://developers.home-assistant.io/docs/add-ons/configuration#add-on-config
 name: OpenV vcontrold to HomA MQTT
-version: "2.0.0-alpha.4"
+version: "2.0.0-alpha.6"
 slug: openv-homa
 description: Connect a Vito heating system using the HomA MQTT framework
 url: "https://github.com/hass-hmueller01/addon-openv-homa"
@@ -91,6 +91,16 @@ options:
       topic: "Betriebsart"
       class: "enum"
       #template: "{% set mapper = {'00':'AUS', '01':'WW', '02':'Heizen + WW', '03':'Dauernd Reduziert', '04':'Dauernd Normal'} %} {{ mapper[value] if value in mapper else 'Unknown ' + value }}"
+    - command: "getBetriebSparM2"
+      setcmd: "setBetriebSparM2"
+      type: "STRING"
+      topic: "Sparbetrieb"
+      class: "enum"
+    - command: "getBetriebPartyM2"
+      setcmd: "setBetriebPartyM2"
+      type: "STRING"
+      topic: "Partybetrieb"
+      class: "enum"
     - command: "getUmschaltventil"
       type: "STRING"
       topic: "Umschaltventil"
