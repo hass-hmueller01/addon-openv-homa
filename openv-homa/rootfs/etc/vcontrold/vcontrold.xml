@@ -123,6 +123,16 @@
       <enum bytes="03" text="2"/>
       <enum text="NOT OK"/>
     </unit>
+    <unit name="ReturnStatusText">
+      <abbrev>RST</abbrev>
+      <type>enum</type>
+      <enum bytes="00" text="AUS"/>
+      <enum bytes="01" text="EIN"/>
+      <!-- At least for device 20CB the heating circuit pump returns
+           status 03 when it's on and the heating runs in in night mode -->
+      <enum bytes="03" text="NACHT"/>
+      <enum text="NOT OK"/>
+    </unit>
     <unit name="BetriebsArt">
       <abbrev>BA</abbrev>
       <type>enum</type>
