@@ -1,6 +1,6 @@
 vito_raumtemperatur_soll:
   name: "Raumtemperatur soll"
-  min: 0
+  min: 3 # valid range starts at 3°C
   max: 35
   step: 1
   icon: "mdi:thermometer"
@@ -8,7 +8,7 @@ vito_raumtemperatur_soll:
   mode: slider
 vito_raumtemperatur_reduziert_soll:
   name: "Raumtemperatur reduziert soll"
-  min: 0
+  min: 3 # valid range starts at 3°C
   max: 35
   step: 1
   icon: "mdi:thermometer"
@@ -16,9 +16,9 @@ vito_raumtemperatur_reduziert_soll:
   mode: slider
 vito_warmwasser_soll:
   name: "Warmwassertemperatur soll"
-  min: 0
-  max: 75
+  min: 10 # valid range starts at 10°C
+  max: 60 # valid range ends at 60°C
   step: 1
   icon: "mdi:thermometer"
   unit_of_measurement: "°C"
-  mode: slider
+  mode: box
