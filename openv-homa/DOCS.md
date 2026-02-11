@@ -44,10 +44,7 @@ The commands section can be edited and extended in YAML mode, e.g.
 ### Integration into Home Assistant
 Integration in Home Assistant is done automatically by the setttings in die `commands` section of the config.
 
-To be able to write (set values) in Home Assistant, manual configuration is needed. For numbers (like the hot water in the example above) a slider can be used. This is done by creating a number helper and an automation doing some of the work.
-
-#### Blueprints
-But [mqtt-slider-sync.yaml](config/blueprints/automation/openv-homa/mqtt-slider-sync.yaml) into `config/blueprints/automation/openv-homa` folder of your Home Assistant installation.
+To be able to write (set values) in Home Assistant, manual configuration is needed. For [numbers](#numbers) (like the hot water in the example above) a slider (or an input box) can be used. For selecting different values a [selector](#selectors) can be used. This is done by creating a helper (or use the input yaml examples below) and an [automation](#automation) (by using a [blueprint](#blueprints)).
 
 #### Numbers
 Config the silder numbers in [openv_input_numbers.yaml](config/input_numbers/openv_input_numbers.yaml) and put it into `config/input_numbers` folder of your Home Assistant installation.
@@ -58,6 +55,22 @@ input_number: !include_dir_merge_named input_numbers
 in your `configuration.yaml`
 
 After that you can add the number entity to your dashboard and modify the value. In the add-on log you will see if the new value gets set.
+
+#### Selectors
+Config the select inputs in [openv_input_select.yaml](config/input_select/openv_input_select.yaml) and put it into `config/input_select` folder of your Home Assistant installation.
+To load these selectors add
+```
+input_select: !include_dir_merge_named input_select
+```
+in your `configuration.yaml`
+
+After that you can add the selector entity to your dashboard and modify the value. In the add-on log you will see if the new value gets set.
+
+#### Blueprints
+But [mqtt-select-sync.yaml](config/blueprints/automation/openv-homa/mqtt-select-sync.yaml) and [mqtt-slider-sync.yaml](config/blueprints/automation/openv-homa/mqtt-slider-sync.yaml) into `config/blueprints/automation/openv-homa` folder of your Home Assistant installation.
+
+#### Automation
+The actual work is done by the automation and the vclient_sub runner. To create the automation use the [blueprint](#blueprints) and configure it with the input, the sensor entity and the MQTT topic.
 
 ### Custom vito.xml / vcontrold.xml configuration file
 
