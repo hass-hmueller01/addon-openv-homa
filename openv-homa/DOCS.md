@@ -20,7 +20,8 @@ In the configuration section, you have 2 choices to connect to your **Vitodens**
 Select a _refresh rate_ that defines the interval used for polling your device and the _device id_ (typically also seen in the device identifier string) which is used to select the correct mapping for the commands that are executed.
 
 The commands section can be edited and extended in YAML mode, e.g.
-```yaml  commands:
+```yaml
+  commands:
     - command: "getTempRaumRedSollM2"
       setcmd: "setTempRaumRedSollM2"
       type: "INT"
@@ -44,33 +45,50 @@ The commands section can be edited and extended in YAML mode, e.g.
 ### Integration into Home Assistant
 Integration in Home Assistant is done automatically by the setttings in die `commands` section of the config.
 
-To be able to write (set values) in Home Assistant, manual configuration is needed. For [numbers](#numbers) (like the hot water in the example above) a slider (or an input box) can be used. For selecting different values a [selector](#selectors) can be used. This is done by creating a helper (or use the input yaml examples below) and an [automation](#automation) (by using a [blueprint](#blueprints)).
+To be able to write (set values) in Home Assistant, manual configuration is needed. First the `setcmd` key must be set in the [add-on configuration](#add-on-configuration) `commands` section. For [numbers](#numbers) (like the hot water in the example above) a slider (or an input box) can be used. For selecting different values a [selector](#selectors) can be used. This is done by creating a helper (or use the input yaml examples below) and an [automation](#automation) (by using a [blueprint](#blueprints)).
 
 #### Numbers
-Config the silder numbers in [openv_input_numbers.yaml](config/input_numbers/openv_input_numbers.yaml) and put it into `config/input_numbers` folder of your Home Assistant installation.
+Download and config the silder numbers in [openv_input_numbers.yaml](config/input_numbers/openv_input_numbers.yaml) and put it into `config/input_numbers` folder of your Home Assistant installation.
+```shell
+curl -L -o openv_input_numbers.yaml \
+  https://raw.githubusercontent.com/hass-hmueller01/addon-openv-homa/refs/heads/main/openv-homa/config/input_select/openv_input_numbers.yaml
+rsync -av openv_input_numbers.yaml root@<home-assistant-ip>:config/input_numbers/
+```
 To load these numbers add
 ```
 input_number: !include_dir_merge_named input_numbers
 ```
-in your `configuration.yaml`
+in your `configuration.yaml` using `ssh root@<home-assistant-ip>` and e.g. the `vi` editor.
 
-After that you can add the number entity to your dashboard and modify the value. In the add-on log you will see if the new value gets set.
+After that you can add the number entity to your dashboard and modify the value.
 
 #### Selectors
-Config the select inputs in [openv_input_select.yaml](config/input_select/openv_input_select.yaml) and put it into `config/input_select` folder of your Home Assistant installation.
+Download and config the select inputs in [openv_input_select.yaml](config/input_select/openv_input_select.yaml) and put it into `config/input_select` folder of your Home Assistant installation.
+```shell
+curl -L -o openv_input_select.yaml \
+  https://raw.githubusercontent.com/hass-hmueller01/addon-openv-homa/refs/heads/main/openv-homa/config/input_select/openv_input_select.yaml
+rsync -av openv_input_select.yaml root@<home-assistant-ip>:config/input_select/
+```
 To load these selectors add
 ```
 input_select: !include_dir_merge_named input_select
 ```
-in your `configuration.yaml`
+in your `configuration.yaml` using `ssh root@<home-assistant-ip>` and e.g. the `vi` editor.
 
-After that you can add the selector entity to your dashboard and modify the value. In the add-on log you will see if the new value gets set.
+After that you can add the selector entity to your dashboard and modify the value.
 
 #### Blueprints
-But [mqtt-select-sync.yaml](config/blueprints/automation/openv-homa/mqtt-select-sync.yaml) and [mqtt-slider-sync.yaml](config/blueprints/automation/openv-homa/mqtt-slider-sync.yaml) into `config/blueprints/automation/openv-homa` folder of your Home Assistant installation.
+Download [mqtt-select-sync.yaml](config/blueprints/automation/openv-homa/mqtt-select-sync.yaml) and [mqtt-slider-sync.yaml](config/blueprints/automation/openv-homa/mqtt-slider-sync.yaml) and put it into `config/blueprints/automation/openv-homa` folder of your Home Assistant installation.
+```shell
+curl -L -o mqtt-select-sync.yaml \
+  https://raw.githubusercontent.com/hass-hmueller01/addon-openv-homa/refs/heads/main/openv-homa/config/blueprints/automation/openv-homa/mqtt-select-sync.yaml
+curl -L -o mqtt-slider-sync.yaml \
+  https://raw.githubusercontent.com/hass-hmueller01/addon-openv-homa/refs/heads/main/openv-homa/config/blueprints/automation/openv-homa/mqtt-slider-sync.yaml
+rsync -av mqtt-select-sync.yaml mqtt-slider-sync.yaml root@<home-assistant-ip>:config/blueprints/automation/openv-homa/
+```
 
 #### Automation
-The actual work is done by the automation and the vclient_sub runner. To create the automation use the [blueprint](#blueprints) and configure it with the input, the sensor entity and the MQTT topic.
+The actual work is done by the automation and the vclient_sub runner. To create the automation use the [blueprint](#blueprints) and configure it with the input, the sensor entity and the MQTT topic. After that you will see in the add-on log if the new value gets set.
 
 ### Custom vito.xml / vcontrold.xml configuration file
 
