@@ -1,0 +1,21 @@
+vito_betriebsart:
+    name: "Betriebsart"
+    icon: "mdi:gas-burner"
+    options:
+        - "Abschalt"
+        - "WW"
+        - "H+WW"
+        - "Dauernd Reduziert"
+        - "Dauernd Normal"
+vito_sparbetrieb:
+    name: "Sparbetrieb"
+    icon: "mdi:leaf"
+    options:
+        - "AUS"
+        - "EIN"
+vito_partybetrieb:
+    name: "Partybetrieb"
+    icon: "mdi:party-popper"
+    options:
+        - "AUS"
+        - "EIN"

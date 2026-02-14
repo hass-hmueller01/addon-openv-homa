@@ -1,12 +1,12 @@
 # https://developers.home-assistant.io/docs/add-ons/configuration#add-on-config
 name: OpenV vcontrold to HomA MQTT
-version: "1.0.1"
+version: "2.0.0"
 slug: openv-homa
 description: Connect a Vito heating system using the HomA MQTT framework
 url: "https://github.com/hass-hmueller01/addon-openv-homa"
 # remove the image tag if you want to use it as a local add-on
 #image: "ghcr.io/hmueller01/{arch}-addon-openv-homa" # on https://github.com
-image: "hmueller01/homeassistant-addon-openv-homa-{arch}" # on https://hub.docker.com
+#image: "hmueller01/homeassistant-addon-openv-homa-{arch}" # on https://hub.docker.com
 #image: "alexandreio/{arch}-homeassistant-vcontrol"
 arch:
   - aarch64
@@ -23,12 +23,14 @@ options:
   debug: false
   commands:
     - command: "getTempRaumRedSollM2"
-      type: "FLOAT1"
+      setcmd: "setTempRaumRedSollM2"
+      type: "INT"
       topic: "Raumtemperatur reduziert soll"
       unit: "°C"
       class: "temperature"
     - command: "getTempRaumNorSollM2"
-      type: "FLOAT1"
+      setcmd: "setTempRaumNorSollM2"
+      type: "INT"
       topic: "Raumtemperatur soll"
       unit: "°C"
       class: "temperature"
@@ -67,6 +69,12 @@ options:
       topic: "Warmwassertemperatur"
       unit: "°C"
       class: "temperature"
+    - command: "getTempWWsoll"
+      setcmd: "setTempWWsoll"
+      type: "INT"
+      topic: "Warmwassertemperatur soll"
+      unit: "°C"
+      class: "temperature"
     - command: "getLeistungIst"
       type: "FLOAT1"
       topic: "Leistung"
@@ -78,10 +86,21 @@ options:
       class: "enum"
       template: "{% set mapper = {'0':'AUS', '1':'EIN', '2':'Nacht'} %} {{ mapper[value] if value in mapper else 'Unknown ' + value }}"
     - command: "getBetriebArtM2"
+      setcmd: "setBetriebArtM2"
       type: "STRING"
       topic: "Betriebsart"
       class: "enum"
       #template: "{% set mapper = {'00':'AUS', '01':'WW', '02':'Heizen + WW', '03':'Dauernd Reduziert', '04':'Dauernd Normal'} %} {{ mapper[value] if value in mapper else 'Unknown ' + value }}"
+    - command: "getBetriebSparM2"
+      setcmd: "setBetriebSparM2"
+      type: "STRING"
+      topic: "Sparbetrieb"
+      class: "enum"
+    - command: "getBetriebPartyM2"
+      setcmd: "setBetriebPartyM2"
+      type: "STRING"
+      topic: "Partybetrieb"
+      class: "enum"
     - command: "getUmschaltventil"
       type: "STRING"
       topic: "Umschaltventil"
@@ -121,6 +140,7 @@ schema:
   debug: "bool?"
   commands:
     - command: "str"
+      setcmd: "str?"
       type: "str"
       topic: "str"
       unit: "str?"
