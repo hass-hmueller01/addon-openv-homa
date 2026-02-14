@@ -6,7 +6,7 @@ description: Connect a Vito heating system using the HomA MQTT framework
 url: "https://github.com/hass-hmueller01/addon-openv-homa"
 # remove the image tag if you want to use it as a local add-on
 #image: "ghcr.io/hmueller01/{arch}-addon-openv-homa" # on https://github.com
-#image: "hmueller01/homeassistant-addon-openv-homa-{arch}" # on https://hub.docker.com
+image: "hmueller01/homeassistant-addon-openv-homa-{arch}" # on https://hub.docker.com
 #image: "alexandreio/{arch}-homeassistant-vcontrol"
 arch:
   - aarch64
