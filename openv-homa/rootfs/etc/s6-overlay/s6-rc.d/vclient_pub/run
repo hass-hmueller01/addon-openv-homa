@@ -6,6 +6,11 @@
 
 bashio::log.info "vclient_pub service starting ..."
 
+declare -r runtime_dir="/run/vcontrold"
+declare -r file_mqtt_commands="${runtime_dir}/1_mqtt_commands.txt"
+declare -r file_mqtt_template="${runtime_dir}/2_mqtt.tmpl"
+declare -r file_mqtt_publish="/dev/shm/3_vcontrold_mqtt_pub.sh"
+
 # Fetch MQTT settings
 source get_mqtt_settings.sh
 
@@ -22,12 +27,12 @@ set +e
 
 # Run your program
 while true; do
-    if vclient -h "$VCONTROL_HOST" -p "$VCONTROL_PORT" -f /etc/vcontrold/1_mqtt_commands.txt \
-               -t /etc/vcontrold/2_mqtt.tmpl > /dev/shm/3_vcontrold_mqtt_pub.sh; then
-        source /dev/shm/3_vcontrold_mqtt_pub.sh
+    if vclient -h "$VCONTROL_HOST" -p "$VCONTROL_PORT" -f ${file_mqtt_commands} \
+               -t ${file_mqtt_template} > ${file_mqtt_publish}; then
+        source ${file_mqtt_publish}
         exitcode=$?
         if [[ $exitcode -ne 0 ]]; then
-            bashio::log.error "vclient_pub run: 3_vcontrold_mqtt_pub.sh failed with exit code $exitcode."
+            bashio::log.error "vclient_pub run: ${file_mqtt_publish} failed with exit code $exitcode."
         fi
     else
         exitcode=$?

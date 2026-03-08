@@ -6,6 +6,9 @@
 
 bashio::log.info "vclient_sub service starting ..."
 
+declare -r runtime_dir="/run/vcontrold"
+declare -r file_mqtt_setcmds="${runtime_dir}/3_mqtt_setcmds.txt"
+
 # Fetch MQTT settings
 source get_mqtt_settings.sh
 
@@ -20,10 +23,9 @@ fi
 # Get configuration options from user
 config_systemid=$(bashio::config 'homa_system_id')
 
-# Set SETCMDS_FILE and check if file exists
-SETCMDS_FILE="/etc/vcontrold/3_mqtt_setcmds.txt"
-if [ ! -f "$SETCMDS_FILE" ]; then
-    bashio::log.info "vclient_sub run: No setcmds (${SETCMDS_FILE}) found ..."
+# Check if $file_mqtt_setcmds file exists
+if [ ! -f "${file_mqtt_setcmds}" ]; then
+    bashio::log.info "vclient_sub run: No setcmds (${file_mqtt_setcmds}) found ..."
     tail -f /dev/null  # Wait here indefinitely to prevent the script from exiting
 fi
 
@@ -59,7 +61,7 @@ while IFS=$'\t' read -r topic cmd setcmd type; do
         mosquitto_pub -h "$MQTT_HOST" -p "$MQTT_PORT" -u "$MQTT_USER" -P "$MQTT_PASSWORD" -t "${topic}" -m "${payload}"
     done &
 
-done < "$SETCMDS_FILE"
+done < "${file_mqtt_setcmds}"
 
 # Let the background processes run
 wait

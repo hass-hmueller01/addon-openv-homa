@@ -14,10 +14,15 @@ declare config_systemid
 declare config_device
 declare config_room
 declare config_area
-declare config_file_vito="/etc/vcontrold/vito.xml"
-declare config_file_vcontrold="/etc/vcontrold/vcontrold.xml"
 declare config_commands
 declare model_name
+
+declare -r runtime_dir="/run/vcontrold"
+declare -r file_mqtt_commands="${runtime_dir}/1_mqtt_commands.txt"
+declare -r file_mqtt_template="${runtime_dir}/2_mqtt.tmpl"
+declare -r file_mqtt_setcmds="${runtime_dir}/3_mqtt_setcmds.txt"
+declare -r file_vito_config="${runtime_dir}/vito.xml"
+declare -r file_vcontrold_config="${runtime_dir}/vcontrold.xml"
 
 # Fetch MQTT settings
 source get_mqtt_settings.sh
@@ -39,29 +44,36 @@ config_area=$(bashio::config 'hass_area')
 # Check if custom vito.xml file exists
 if [ -f "/config/vcontrold/vito.xml" ]; then
     bashio::log.info "Using custom vito.xml file."
-    cp "/config/vcontrold/vito.xml" "${config_file_vito}"
+    cp "/config/vcontrold/vito.xml" "${file_vito_config}"
 else
     bashio::log.info "Using default vito.xml file."
+    cp "/etc/vcontrold/vito.xml" "${file_vito_config}"
 fi
 
 # Check if custom vcontrold.xml file exists
 if [ -f "/config/vcontrold/vcontrold.xml" ]; then
     bashio::log.info "Using custom vcontrold.xml file."
-    cp "/config/vcontrold/vcontrold.xml" "${config_file_vcontrold}"
+    cp "/config/vcontrold/vcontrold.xml" "${file_vcontrold_config}"
 else
     bashio::log.info "Using default vcontrold.xml file."
+    cp "/etc/vcontrold/vcontrold.xml" "${file_vcontrold_config}"
+fi
+
+# Check if "#VITOXML#" exists in $file_vito_config
+if ! grep -q "#VITOXML#" "$file_vito_config"; then
+    bashio::exit.nok "The reference '<xi:include href="#VITOXML#" parse="xml"/>' must be present in $file_vito_config"
 fi
 
 # Get the device name from the vito.xml file based on the device ID
 # Usage: get_device_name_from_xml
-# Requires globals: config_deviceid, config_file_vito
+# Requires globals: config_deviceid, file_vito_config
 # returns: device name or "UNKNOWN" if not found
 get_device_name_from_xml() {
-    xmlstarlet sel -t -m "/vito/devices/device[@ID='$config_deviceid']" -v "@name" -n "$config_file_vito" || {
-        bashio::log.error "Device ID '$config_deviceid' not found in XML file '$config_file_vito'."
+    xmlstarlet sel -t -m "/vito/devices/device[@ID='$config_deviceid']" -v "@name" -n "$file_vito_config" || {
+        bashio::log.error "Device ID '$config_deviceid' not found in XML file '$file_vito_config'."
         return "UNKNOWN"
     }
-    #xmllint --xpath "string(/vito/devices/device[@ID='$config_deviceid']/@name)" "$config_file_vito"
+    #xmllint --xpath "string(/vito/devices/device[@ID='$config_deviceid']/@name)" "$file_vito_config"
 }
 
 # Setup Home Assistant
@@ -73,8 +85,8 @@ sw_version=$(bashio::addon.version)
 homasystem_config "_$config_device" "_$config_room"
 
 # Cleanup old scripts
-rm -f /etc/vcontrold/{1_mqtt_commands.txt,2_mqtt.tmpl,3_mqtt_setcmds.txt} || true
-echo '#!/bin/sh' > /etc/vcontrold/2_mqtt.tmpl
+rm -f ${file_mqtt_commands} ${file_mqtt_template} ${file_mqtt_setcmds} || true
+echo '#!/bin/sh' > ${file_mqtt_template}
 
 # Parse commands of config data 'commands' and generate mqtt template file
 i=0
@@ -82,6 +94,7 @@ config_commands=$(bashio::config 'commands')
 # This should be a JSON array: [{"command":"getTempRaumM2","type":"FLOAT1","topic":"Raumtemperatur","unit":"°C","class":"temperature"}, ...]
 # but for unknown reason is a JSON-Line format: {"command":"getTempRaumM2","type":"FLOAT1","topic":"Raumtemperatur","unit":"°C","class":"temperature"}
 # bashio::log.info "config_commands: $config_commands"
+# TODO: check if config_commands can be parsed by mapfile or if we need to do it manually with a while read loop and jq
 while read -r line; do
     ((i=i+1))
     # line is a JSON-Line, e.g. {"command":"getTempRaumM2","type":"FLOAT1","topic":"Raumtemperatur","unit":"°C","class":"temperature"}
@@ -110,11 +123,11 @@ while read -r line; do
     topic_tmpl=$(get_homa_topic "controls" "$topic")
 
     bashio::log.info "Configuring cmd ${i}: ${cmd} with type ${type} using topic '${topic_tmpl}'"
-    echo $cmd >> /etc/vcontrold/1_mqtt_commands.txt
+    echo $cmd >> "${file_mqtt_commands}"
 
     if [[ ! -z "$setcmd" ]]; then
         bashio::log.info "Configuring setcmd: ${setcmd} using topic '${topic_tmpl}/on'"
-        printf '%s\t%s\t%s\t%s\n' "${topic_tmpl}" "${cmd}" "${setcmd}" "${type}" >> /etc/vcontrold/3_mqtt_setcmds.txt
+        printf '%s\t%s\t%s\t%s\n' "${topic_tmpl}" "${cmd}" "${setcmd}" "${type}" >> "${file_mqtt_setcmds}"
     fi
 
     if [[ $type == "FLOAT" ]]; then
@@ -129,9 +142,9 @@ while read -r line; do
         bashio::exit.nok "Unsupported type '${type}' for command ${cmd}. Supported types are FLOAT, FLOAT1, INT, STRING."
     fi
 
-    echo 'if [ "x$E'$i'" = "xOK" ]; then' >> /etc/vcontrold/2_mqtt.tmpl
-    echo '  mosquitto_pub -h $MQTT_HOST -p $MQTT_PORT -u $MQTT_USER -P $MQTT_PASSWORD -t "'${topic_tmpl}'" -m '${payload}' -r' >> /etc/vcontrold/2_mqtt.tmpl
-    echo 'fi' >> /etc/vcontrold/2_mqtt.tmpl
+    echo 'if [ "x$E'$i'" = "xOK" ]; then' >> ${file_mqtt_template}
+    echo '  mosquitto_pub -h $MQTT_HOST -p $MQTT_PORT -u $MQTT_USER -P $MQTT_PASSWORD -t "'${topic_tmpl}'" -m '${payload}' -r' >> ${file_mqtt_template}
+    echo 'fi' >> ${file_mqtt_template}
 
     # Publish meta information for HomA integration
     homacontrol_config "_$topic" "_text" "_$i" "_$unit"
@@ -141,14 +154,14 @@ while read -r line; do
 done <<< "$config_commands"
 
 # Configure vcontrold.xml with the user-specified values
-sed -i "s/#DEVICEID#/$config_deviceid/g" "$config_file_vcontrold"
-sed -i "s|#VITOXML#|$config_file_vito|g" "$config_file_vcontrold"
+sed -i "s/#DEVICEID#/$config_deviceid/g" "$file_vcontrold_config"
+sed -i "s|#VITOXML#|$file_vito_config|g" "$file_vcontrold_config"
 
 # Enable or disable debug mode based on user configuration
 if bashio::config.true 'debug'; then
-    sed -i "s/#DEBUG#/y/g" "$config_file_vcontrold"
+    sed -i "s/#DEBUG#/y/g" "$file_vcontrold_config"
 else
-    sed -i "s/#DEBUG#/n/g" "$config_file_vcontrold"
+    sed -i "s/#DEBUG#/n/g" "$file_vcontrold_config"
 fi
 
 # https://skarnet.org/software/s6/s6-notifyoncheck.html
@@ -165,7 +178,7 @@ s6-notifyoncheck -d -s 200 -w 1000 -n 10 \
 if [ "$VCONTROL_HOST" = "localhost" ]; then
     bashio::log.info "Starting local vcontrold ..."
     bashio::config.true 'debug' && vcontrold_log="-l /dev/stdout" || vcontrold_log="-l /var/log/vcontrold.log"
-    exec /usr/sbin/vcontrold -x "$config_file_vcontrold" -n -U root -d "$config_tty" $vcontrold_log
+    exec /usr/sbin/vcontrold -x "$file_vcontrold_config" -n -U root -d "$config_tty" $vcontrold_log
 else
     bashio::log.info "vcontrold is not running locally. Keeping process alive."
     tail -f /dev/null
