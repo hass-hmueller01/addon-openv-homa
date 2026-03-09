@@ -95,6 +95,10 @@ config_commands=$(bashio::config 'commands')
 # but for unknown reason is a JSON-Line format: {"command":"getTempRaumM2","type":"FLOAT1","topic":"Raumtemperatur","unit":"°C","class":"temperature"}
 # bashio::log.info "config_commands: $config_commands"
 # TODO: check if config_commands can be parsed by mapfile or if we need to do it manually with a while read loop and jq
+# mapfile -t commands_array <<< "${config_commands}"
+# if (( ${#commands_array[@]} == 1 )) && [[ "${commands_array[0]}" == *'\t'* ]]; then
+#     IFS=$'\t' read -r -a commands_array <<< "${commands_array[0]}"
+# fi
 while read -r line; do
     ((i=i+1))
     # line is a JSON-Line, e.g. {"command":"getTempRaumM2","type":"FLOAT1","topic":"Raumtemperatur","unit":"°C","class":"temperature"}
